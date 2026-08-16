@@ -90,11 +90,20 @@ class App(SimpleHTTPRequestHandler):
     if not permitted(u,capability): self.send_json({'error':'You do not have permission for this action'},403); return None
     return u
   def do_GET(self):
+    # The deployed client sends every API request to Vercel's single function
+    # and places the original route in `_route`; local development uses paths directly.
+    parsed = urlparse(self.path)
+    forwarded = parse_qs(parsed.query).get('_route', [None])[0]
+    if forwarded: self.path = forwarded
     path=urlparse(self.path).path
     if path.startswith('/api/'): return self.api_get(path)
     if path=='/': path='/index.html'
     self.path=path; return super().do_GET()
-  def do_POST(self): self.api_post(urlparse(self.path).path)
+  def do_POST(self):
+    parsed = urlparse(self.path)
+    forwarded = parse_qs(parsed.query).get('_route', [None])[0]
+    if forwarded: self.path = forwarded
+    self.api_post(urlparse(self.path).path)
   def api_get(self,path):
     if path=='/api/me':
       u=self.user(); return self.send_json({'user':{k:u[k] for k in ('id','name','email','role','branch')} if u else None})
