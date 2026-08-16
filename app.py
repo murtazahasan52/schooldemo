@@ -8,7 +8,9 @@ from datetime import datetime, date
 import csv, hashlib, json, os, secrets, sqlite3
 
 ROOT = Path(__file__).parent
-DB = ROOT / "schoolflow.db"
+# Vercel functions may only write to /tmp. Local development keeps the database
+# beside the app; deployed demos are seeded again when a serverless instance starts.
+DB = Path("/tmp/schoolflow.db") if os.environ.get("VERCEL") else ROOT / "schoolflow.db"
 SESSIONS = {}
 
 PERMISSIONS = {
