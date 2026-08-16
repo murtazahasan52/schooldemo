@@ -1,0 +1,4 @@
+# Local runtime data and temporary files
+schoolflow.db
+__pycache__/
+work/
